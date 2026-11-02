@@ -1,15 +1,15 @@
 {
   "id": "./",
-  "name": "我的错题本",
-  "short_name": "错题本",
-  "description": "自动保存到本机的错题本",
+  "name": "魔法学院",
+  "short_name": "魔法学院",
+  "description": "自动保存并可导入导出 JSON 的手机错题修炼手册",
   "lang": "zh-CN",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#667eea",
-  "theme_color": "#667eea",
+  "background_color": "#f5f7fa",
+  "theme_color": "#7c3aed",
   "icons": [
     {
       "src": "./icons/icon-192.png",

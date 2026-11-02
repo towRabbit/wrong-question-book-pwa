@@ -1,749 +1,1539 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#667eea">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="我的错题本">
-    <title>我的错题本</title>
-    <link rel="manifest" href="./manifest.webmanifest">
-    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Microsoft YaHei', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-        
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-            font-size: 14px;
-        }
-        
-        .stat-item {
-            text-align: center;
-        }
-        
-        .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            display: block;
-        }
-        
-        .content {
-            padding: 20px;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#7c3aed" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="魔法学院" />
+  <title>魔法学院 · 手机版</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        .autosave-status {
-            margin-top: 14px;
-            color: rgba(255, 255, 255, 0.82);
-            font-size: 12px;
-            line-height: 1.4;
-            min-height: 17px;
-        }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #f5f7fa;
+    }
 
-        .autosave-status.error {
-            color: #ffe3e3;
-            font-weight: bold;
-        }
-        
-        .input-section {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #333;
-            font-size: 14px;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            font-family: inherit;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 5px rgba(102, 126, 234, 0.2);
-        }
-        
-        textarea {
-            resize: vertical;
-            min-height: 60px;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 10px;
-        }
-        
-        button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-add {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .btn-add:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
-        
-        .btn-clear {
-            background: #f0f0f0;
-            color: #666;
-        }
-        
-        .btn-clear:hover {
-            background: #e0e0e0;
-        }
-        
-        .filter-section {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .filter-btn {
-            padding: 8px 15px;
-            background: #f0f0f0;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        
-        .filter-btn.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-        
-        .questions-list {
-            display: grid;
-            gap: 15px;
-        }
-        
-        .question-card {
-            background: #f8f9fa;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 15px;
-            transition: all 0.3s;
-        }
-        
-        .question-card:hover {
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-color: #667eea;
-        }
-        
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .subject-badge {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .error-count {
-            background: #ff6b6b;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .question-content {
-            margin: 10px 0;
-            color: #333;
-            line-height: 1.6;
-            font-size: 14px;
-        }
-        
-        .card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #ddd;
-        }
-        
-        .date {
-            color: #999;
-            font-size: 12px;
-        }
-        
-        .card-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .btn-small {
-            padding: 5px 12px;
-            font-size: 12px;
-            background: #f0f0f0;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-small:hover {
-            background: #ddd;
-        }
-        
-        .btn-delete {
-            background: #ff6b6b;
-            color: white;
-        }
-        
-        .btn-delete:hover {
-            background: #ee5a52;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #999;
-        }
-        
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 10px;
-        }
-        
-        .stats-chart {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .chart-item {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .chart-item-label {
-            font-size: 12px;
-            opacity: 0.9;
-        }
-        
-        .chart-item-value {
-            font-size: 24px;
-            font-weight: bold;
-            margin-top: 5px;
-        }
+    .sort-icon {
+      display: inline-block;
+      margin-left: 4px;
+      font-size: 12px;
+      color: #999;
+    }
+    .sort-icon.asc::after {
+      content: "↑";
+      color: #0066cc;
+    }
+    .sort-icon.desc::after {
+      content: "↓";
+      color: #0066cc;
+    }
 
-        @media (max-width: 600px) {
-            body {
-                padding: 0;
-                background: white;
-            }
+    .drawer-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 999;
+    }
+    .drawer-overlay.active {
+      display: block;
+    }
 
-            .container {
-                min-height: 100vh;
-                border-radius: 0;
-                box-shadow: none;
-            }
+    .drawer-content {
+      position: fixed;
+      right: -680px;
+      top: 0;
+      width: 680px;
+      height: 100vh;
+      background: #fff;
+      box-shadow: -2px 0 12px rgba(0, 0, 0, 0.16);
+      z-index: 1000;
+      transition: right 0.28s ease;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .drawer-content.active {
+      right: 0;
+    }
 
-            .header {
-                padding: calc(24px + env(safe-area-inset-top)) 16px 24px;
-            }
+    .header-title {
+      padding: 20px;
+      background: #fff;
+      border-bottom: 1px solid #e8e8e8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-            .header h1 {
-                font-size: 24px;
-            }
+    .create-btn {
+      background: #0066cc;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+    .create-btn:hover {
+      background: #0052a3;
+    }
 
-            .content {
-                padding: 16px;
-            }
+    .table-wrapper {
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
 
-            .input-section {
-                padding: 16px;
-            }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
 
-            input, select, textarea {
-                font-size: 16px;
-            }
+    thead {
+      background: #fafafa;
+      border-bottom: 1px solid #e8e8e8;
+    }
 
-            .button-group {
-                flex-direction: column;
-            }
-        }
-    </style>
+    th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    th:hover {
+      background: #f5f5f5;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #e8e8e8;
+      color: #666;
+      vertical-align: top;
+    }
+
+    tbody tr:hover {
+      background: #f9f9f9;
+      cursor: pointer;
+    }
+
+    .operation-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .op-btn {
+      padding: 4px 12px;
+      border-radius: 4px;
+      border: 1px solid #d9d9d9;
+      background: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      transition: 0.2s;
+    }
+    .op-btn:hover {
+      border-color: #0066cc;
+      color: #0066cc;
+    }
+    .op-btn.delete-btn:hover {
+      border-color: #ff4d4f;
+      color: #ff4d4f;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+
+    .type-item {
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      padding-right: 60px;
+      border-radius: 8px;
+    }
+    .type-item:hover {
+      background: #f0f4ff;
+    }
+    .type-item.active {
+      background: #e6f0ff;
+      border-left: 3px solid #0066cc;
+    }
+
+    .type-actions {
+      display: none;
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      gap: 8px;
+    }
+    .type-item:hover .type-actions {
+      display: flex;
+    }
+
+    .action-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .action-btn.edit {
+      background: #fff7e6;
+      color: #ff9c00;
+    }
+    .action-btn.edit:hover {
+      background: #ffe7ba;
+    }
+    .action-btn.delete {
+      background: #ffe7e7;
+      color: #ff4d4f;
+    }
+    .action-btn.delete:hover {
+      background: #ffccc7;
+    }
+
+    .drawer-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid #e8e8e8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      flex: 0 0 auto;
+    }
+    .drawer-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #999;
+    }
+
+    .drawer-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1 1 auto;
+      background: #fff;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fff;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #0066cc;
+      box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
+    }
+
+    .source-input-group {
+      display: flex;
+      gap: 8px;
+    }
+    .source-input-group select {
+      flex: 1;
+    }
+    .source-input-group input {
+      width: 110px;
+    }
+
+    .review-reminder {
+      background: #e6f7ff;
+      border-left: 3px solid #0066cc;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #0066cc;
+    }
+
+    .upload-zone {
+      border: 2px dashed #d9d9d9;
+      border-radius: 8px;
+      padding: 18px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 10px;
+      background: #fafafa;
+      color: #666;
+      font-size: 14px;
+    }
+    .upload-zone:hover {
+      border-color: #0066cc;
+      background: #f5faff;
+      color: #0066cc;
+    }
+
+    .uploaded-images {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .image-item {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f5f5f5;
+      border: 1px solid #e8e8e8;
+      flex-shrink: 0;
+    }
+
+    .image-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #fff;
+      display: block;
+    }
+
+    .image-remove {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 77, 79, 0.95);
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 24px;
+      text-align: center;
+    }
+
+    .drawer-footer {
+      padding: 16px 20px;
+      border-top: 1px solid #e8e8e8;
+      background: #fff;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex: 0 0 auto;
+    }
+
+    .btn-primary {
+      background: #0066cc;
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-primary:hover {
+      background: #0052a3;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 1001;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-content {
+      background: #fff;
+      border-radius: 10px;
+      padding: 22px;
+      width: 420px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+    .modal-content h3 {
+      margin-bottom: 16px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .modal-content input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .modal-buttons button {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-secondary {
+      background: #f5f5f5;
+      color: #333;
+    }
+    .btn-secondary:hover {
+      background: #e8e8e8;
+    }
+    .btn-primary2 {
+      background: #0066cc;
+      color: #fff;
+    }
+    .btn-primary2:hover {
+      background: #0052a3;
+    }
+
+    .question-content-preview,
+    .answer-content-preview {
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.6;
+      color: #333;
+      background: #fafafa;
+      border: 1px solid #ececec;
+      border-radius: 6px;
+      padding: 10px 12px;
+      min-height: 60px;
+    }
+    #imagePreview { position:fixed; inset:0; z-index:3000; background:rgba(0,0,0,.9); color:white; }
+    #imagePreview[hidden] { display:none; }
+    .preview-toolbar { position:absolute; top:16px; right:20px; display:flex; gap:12px; z-index:1; }
+    .preview-toolbar button { background:white; color:#222; border:0; border-radius:6px; padding:10px 16px; cursor:pointer; }
+    #previewStage { position:absolute; inset:75px 0 0; overflow:auto; text-align:center; }
+    #previewPicture { display:block; margin:0 auto; max-width:90vw; max-height:80vh; object-fit:contain; }
+    [hidden] { display:none !important; }
+
+    /* 魔法学院：紧凑布局、羊皮纸与学院蓝 */
+    :root { --ink:#273247; --navy:#17263c; --gold:#d7b56d; --paper:#fbf6e9; --line:#e2d5b8; }
+    body { color:var(--ink); background:#f1ead9; }
+    #appShell { background:radial-gradient(ellipse at 85% 0%,#fff9e9 0%,#f1ead9 65%); }
+    #magicSidebar { width:224px; flex:0 0 224px; background:linear-gradient(160deg,#20334f,#101d31); border-color:#35425a; color:#f3e6c5; }
+    #magicSidebar > .p-6 { padding:18px 14px 15px; border-color:#ffffff20; text-align:center; }
+    .school-crest { width:40px; height:46px; margin:0 auto 8px; display:grid; place-items:center; color:var(--gold); font-size:28px; border:1px solid #b99a5e; border-radius:8px 8px 20px 20px; background:#ffffff06; }
+    #magicSidebar h1 { color:#f7e8be; font-family:Georgia,"Songti SC",serif; font-size:20px; letter-spacing:3px; }
+    .school-caption { font-size:11px; color:#bead8a; margin-top:6px; }
+    #typesList { padding:10px 8px; }
+    #typesList .type-item { padding:9px 68px 9px 10px; margin:0 0 3px; min-height:38px; border-radius:5px; border-left:3px solid transparent; }
+    #typesList .type-item > div > div { display:flex; align-items:center; gap:7px; min-width:0; }
+    #typesList .type-item .font-medium { color:#e6e9ef; font-size:13px; line-height:20px; overflow-wrap:anywhere; }
+    #typesList .type-item .text-sm { color:#bcb8ab; font-size:11px; white-space:nowrap; }
+    #typesList .type-item:hover, #typesList .type-item:focus-within { background:#ffffff0d; }
+    #typesList .type-item.active { background:#d7b56d1c; border-left-color:var(--gold); }
+    #typesList .type-item.active .font-medium { color:#ffe3a3; }
+    .type-actions { right:6px; gap:4px; }
+    .type-item:focus-within .type-actions { display:flex; }
+    .action-btn { width:25px; height:25px; font-size:11px; }
+    #magicSidebar > .p-4 { padding:10px; border-color:#ffffff20; }
+    #addTypeBtn { background:#d7b56d; color:#253149; font-size:12px; padding:8px; }
+    #addTypeBtn:hover { background:#ead098; }
+    .header-title { padding:13px 20px; background:#fffaf0; border-color:var(--line); }
+    #pageTitle { font-family:Georgia,"Songti SC",serif; font-size:20px; color:#33415b; }
+    .header-title + .p-6 { padding:16px 20px; }
+    .create-btn,.btn-primary,.btn-primary2 { background:#344d70; color:#fff6df; border:1px solid #344d70; padding:8px 16px; }
+    .create-btn:hover,.btn-primary:hover,.btn-primary2:hover { background:#253d5d; }
+    #todayQuest { padding:12px 15px !important; margin-bottom:14px !important; background:linear-gradient(110deg,#fff8df,#fcf3d9) !important; border:1px solid #d9c18a !important; border-radius:8px !important; box-shadow:0 2px 6px #55401b08; }
+    #todayQuest h3 { color:#765727 !important; font-size:16px !important; }
+    #todayQuest > p { color:#82724e !important; margin:4px 0 8px !important; font-size:12px !important; }
+    #todayReviewList { font-size:13px; color:#5c513b; max-height:220px; overflow:auto; }
+    #todayReviewList > div { padding:7px 0 !important; border-color:#e7d9b4 !important; }
+    .table-wrapper { background:#fffcf5; border:1px solid var(--line); border-radius:8px; box-shadow:0 3px 12px #42321a06; overflow:auto; }
+    table { font-size:13px; }
+    thead { background:#eee6d3; border-color:var(--line); }
+    th { padding:10px; color:#60513b; }
+    th:hover { background:#e8ddc4; }
+    td { padding:9px 10px; border-color:#ece4d2; color:#535b65; }
+    tbody tr:hover { background:#f5edda; }
+    .op-btn { padding:4px 9px; border-color:#cbbd9e; background:#fffcf5; color:#4d5770; }
+    .op-btn:hover { color:#785b27; border-color:#aa8540; background:#fff4d6; }
+    .drawer-content { width:min(640px,100vw); background:var(--paper); }
+    .drawer-header { padding:12px 18px; background:#20334f; border-color:#d7b56d; color:#f6e9c9; }
+    .close-btn { color:#f6e9c9; }
+    .drawer-body { padding:15px 18px; background:var(--paper); }
+    .form-group { margin-bottom:12px; }
+    .form-group label { margin-bottom:5px; color:#5b4c36; font-size:13px; }
+    .form-group input,.form-group textarea,.form-group select,#practiceResponse { padding:8px 10px; background:#fffdf7; border-color:#d8c9a8 !important; color:#30394a; font-size:13px; }
+    .form-group textarea { min-height:76px; }
+    .upload-zone { padding:12px; background:#f6efdf; border-color:#ccba91; font-size:12px; color:#7b6843; }
+    .review-reminder { padding:10px 12px; margin-bottom:12px; background:#eee7d4; border:1px solid #dfd0ae; color:#756039; }
+    .drawer-footer { padding:10px 18px; background:#f5eddb; border-color:var(--line); }
+    .modal-content { background:#fffaf0; border:1px solid #cfb57f; }
+    .empty-state { padding:26px; color:#94866a; }
+    button:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible { outline:2px solid #ba903f; outline-offset:2px; }
+    @media (hover:none) { .type-actions { display:flex; } }
+    @media (max-width:700px) { #magicSidebar { width:164px; flex-basis:164px; } #typesList .type-item { padding-right:8px; } .type-actions { position:static; transform:none; margin-top:5px; } #typesList .type-item > div > div { flex-wrap:wrap; gap:3px 7px; } .school-caption { font-size:10px; } .header-title,.header-title + .p-6 { padding:12px; } #pageTitle { font-size:17px; } }
+
+    #mobileMenuBtn { display:none; }
+    #mobileShade { display:none; }
+    #appShell { height:100dvh; }
+    #appShell > .flex-1 { min-height:0; }
+    button { touch-action:manipulation; }
+    @media(max-width:800px) {
+      #mobileMenuBtn { display:block; flex-shrink:0; min-height:40px; }
+      #magicSidebar { position:fixed; left:0; top:0; bottom:0; width:240px; z-index:2000; transform:translateX(-100%); transition:transform .2s; }
+      #magicSidebar.mobile-open { transform:translateX(0); }
+      body:has(#magicSidebar.mobile-open) #mobileShade { display:block;position:fixed;inset:0;background:#0007;z-index:1999; }
+      .header-title { gap:8px; padding:10px 12px; }
+      #pageTitle { flex:1; min-width:0; font-size:17px; overflow-wrap:anywhere; }
+      .create-btn { padding:8px 10px; font-size:13px; min-height:40px; }
+      #diskBar { padding:10px 12px !important; }
+      #diskBar .op-btn { min-height:38px; }
+      .header-title + .p-6 { padding:12px; }
+      .table-wrapper { border:0; background:transparent; box-shadow:none; overflow:visible; }
+      table,tbody { display:block; width:100%; }
+      thead { display:none; }
+      tbody tr { display:grid; grid-template-columns:1fr 1fr; gap:0 8px; background:#fffcf5; border:1px solid #e2d5b8; border-radius:10px; padding:10px; margin-bottom:10px; }
+      tbody td { display:block; padding:6px 3px; border:0; font-size:14px; overflow-wrap:anywhere; }
+      tbody td::before { display:block;color:#92805e;font-size:11px;margin-bottom:2px; }
+      tbody td:nth-child(1)::before { content:"题号"; }
+      tbody td:nth-child(2)::before { content:"类型"; }
+      tbody td:nth-child(3)::before { content:"来源"; }
+      tbody td:nth-child(4)::before { content:"错误次数"; }
+      tbody td:nth-child(5)::before { content:"正确次数"; }
+      tbody td:nth-child(6)::before { content:"复习日期"; }
+      tbody td:nth-child(6),tbody td:last-child { grid-column:1/-1; }
+      .operation-buttons .op-btn { flex:1; min-height:42px; }
+      #todayReviewList > div { align-items:flex-start !important; }
+      #todayReviewList button { min-height:40px; }
+      .drawer-content { width:100vw; height:100dvh; right:-100vw; }
+      .drawer-body { padding:12px; }
+      .drawer-footer { padding:10px 12px calc(10px + env(safe-area-inset-bottom)); }
+      .drawer-footer button { flex:1; min-height:46px; font-size:16px; }
+      .form-group input,.form-group textarea,.form-group select,#practiceResponse { font-size:16px !important; }
+      .upload-zone { padding:16px; }
+      .modal-content { width:calc(100vw - 32px); }
+      .preview-toolbar { left:8px; right:8px; top:12px; gap:6px; }
+      .preview-toolbar button { flex:1; padding:10px 4px; font-size:12px; min-height:42px; }
+      #responseUploadBtn { min-height:44px; width:100%; }
+      .image-item { width:84px; height:84px; }
+      .image-remove { min-width:28px; min-height:28px; }
+      #typesList .type-item { padding:10px 68px 10px 10px; }
+      .type-actions { position:absolute; transform:translateY(-50%);margin:0; }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📚 我的错题本</h1>
-            <div class="stats">
-                <div class="stat-item">
-                    <span class="stat-number" id="totalQuestions">0</span>
-                    <div>总错题数</div>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number" id="totalErrors">0</span>
-                    <div>总错次数</div>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number" id="subjects">0</span>
-                    <div>科目数</div>
-                </div>
-            </div>
-            <div class="autosave-status" id="autosaveStatus" aria-live="polite">正在读取本地数据...</div>
+  <div id="mobileShade" aria-hidden="true"></div>
+  <div id="appShell" class="flex h-screen bg-gray-100">
+    <!-- 左侧栏 -->
+    <aside id="magicSidebar" class="w-64 bg-white border-r border-gray-200 flex flex-col">
+      <div class="p-6 border-b border-gray-200">
+        <div class="school-crest" aria-hidden="true">✦</div><h1 class="text-lg font-bold text-gray-900">魔法学院</h1><p class="school-caption">错题修炼手册 · 每天进步一点点</p>
+      </div>
+
+      <div class="flex-1 overflow-y-auto">
+        <div id="typesList" class="p-4"></div>
+      </div>
+
+      <div class="p-4 border-t border-gray-200">
+        <button id="addTypeBtn" class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+          + 添加类型
+        </button>
+      </div>
+    </aside>
+
+    <!-- 右侧主内容 -->
+    <div class="flex-1 flex flex-col" style="min-width:0;">
+      <div id="diskBar" style="padding:10px 16px;background:#fff3d3;border-bottom:1px solid #d9c18a;font-size:12px;">
+        <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:6px;">
+          <strong>📜 本机数据</strong><input id="mobileFileInput" type="file" accept=".json,application/json" hidden />
+          <button class="op-btn" id="newDataBtn">导出到文件</button>
+          <button class="op-btn" id="openDataBtn">导入 JSON</button>
         </div>
-        
-        <div class="content">
-            <div class="input-section">
-                <h3 style="margin-bottom: 15px; color: #333;">➕ 录入错题</h3>
-                
-                <div class="form-group">
-                    <label>科目</label>
-                    <select id="subject">
-                        <option value="">选择科目</option>
-                        <option value="语文">语文</option>
-                        <option value="数学">数学</option>
-                        <option value="英语">英语</option>
-                        <option value="物理">物理</option>
-                        <option value="化学">化学</option>
-                        <option value="生物">生物</option>
-                        <option value="历史">历史</option>
-                        <option value="地理">地理</option>
-                        <option value="其他">其他</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>错题内容</label>
-                    <textarea id="question" placeholder="请输入错题内容或拍照上传题目..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>出错原因</label>
-                    <input type="text" id="reason" placeholder="例如：粗心、不会、理解错误...">
-                </div>
-                
-                <div class="button-group">
-                    <button class="btn-add" onclick="addQuestion()">✓ 添加错题</button>
-                    <button class="btn-clear" onclick="clearForm()">清空</button>
-                </div>
-            </div>
-            
-            <div class="filter-section" id="filterSection">
-                <button class="filter-btn active" data-subject="">全部</button>
-            </div>
-            
-            <div id="questionsList" class="questions-list">
-                <div class="empty-state">
-                    <div class="empty-state-icon">📝</div>
-                    <div>暂无错题，加油学习！</div>
-                </div>
-            </div>
-            
-            <div id="chartSection" style="display: none; margin-top: 30px;">
-                <h3 style="margin-bottom: 15px; color: #333;">📊 统计数据</h3>
-                <div class="stats-chart" id="chart"></div>
-            </div>
+        <div id="diskStatus" role="status" aria-live="polite">正在读取本机数据…</div>
+        <div style="margin-top:4px;color:#75664c;">修改会自动保存在本机；点击“导出到文件”可备份到“文件”App或iCloud Drive。</div>
+      </div>
+      <div class="header-title">
+        <button id="mobileMenuBtn" class="op-btn" aria-label="打开类型导航">☰ 类型</button><h2 id="pageTitle" class="text-xl font-bold text-gray-900">全部错题</h2>
+        <button id="createBtn" class="create-btn">✦ 新建错题</button>
+      </div>
+
+      <div class="flex-1 overflow-auto p-6">
+        <section id="todayQuest" style="margin-bottom:20px;padding:18px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;">
+          <h3 style="font-size:18px;font-weight:600;color:#1d4ed8;">✧ 今日复习任务 <span id="todayCount"></span></h3>
+          <p style="font-size:13px;color:#475569;margin:6px 0 12px;">小巫师，今天的复习任务已送达！挥动羽毛笔，再挑战一次吧。</p>
+          <div id="todayReviewList"></div>
+        </section>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 70px;" data-sort="id">序号 <span class="sort-icon"></span></th>
+                <th style="width: 110px;" data-sort="category">所属分类 <span class="sort-icon"></span></th>
+                <th style="width: 130px;" data-sort="source">错题来源 <span class="sort-icon"></span></th>
+                <th style="width: 90px;" data-sort="errors">错误次数 <span class="sort-icon"></span></th>
+                <th style="width: 90px;" data-sort="correct">正确次数 <span class="sort-icon"></span></th>
+                <th style="width: 180px;" data-sort="reviewDate">复习日期 <span class="sort-icon"></span></th>
+                <th style="width: 120px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
         </div>
+        <div id="emptyState" class="empty-state" style="display:none;">
+          <p>暂无数据</p>
+        </div>
+      </div>
     </div>
-    
-    <script>
-        'use strict';
+  </div>
 
-        const DB_NAME = 'wrong-question-book';
-        const DB_VERSION = 1;
-        const DB_STORE = 'appState';
-        const SCHEMA_VERSION = 1;
+  <!-- 抽屉 -->
+  <div id="drawerOverlay" class="drawer-overlay"></div>
+  <div id="drawer" class="drawer-content">
+    <div class="drawer-header">
+      <h2 id="drawerTitle">新建错题</h2>
+      <button class="close-btn" id="closeDrawerBtn">✕</button>
+    </div>
 
-        let questions = [];
-        let currentFilter = '';
-        let loadFailed = false;
-        let lastSavedAt = null;
-        let saveQueue = Promise.resolve(true);
-        let pendingWrites = 0;
-        
-        async function addQuestion() {
-            if (!canEdit()) return;
-            const subject = document.getElementById('subject').value;
-            const question = document.getElementById('question').value;
-            const reason = document.getElementById('reason').value;
-            
-            if (!subject || !question) {
-                alert('请选择科目并输入错题内容');
-                return;
-            }
-            
-            const newQuestion = {
-                id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-                subject,
-                question,
-                reason,
-                errorCount: 1,
-                date: new Date().toLocaleDateString('zh-CN')
+    <div class="drawer-body">
+      <div class="form-group">
+        <label>录入日期</label>
+        <input type="date" id="inputDate" readonly />
+      </div>
+
+      <div id="reviewReminder" class="review-reminder"></div>
+
+      <div class="form-group">
+        <label>所属分类 <span style="color:red;">*</span></label>
+        <select id="categorySelect">
+          <option value="">请选择分类</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>错题来源</label>
+        <div class="source-input-group">
+          <select id="sourceSelect">
+            <option value="">请选择</option>
+            <option value="目标">目标</option>
+            <option value="卷子">卷子</option>
+            <option value="100篇">100篇</option>
+          </select>
+          <input type="number" id="pageInput" placeholder="页数" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>题目</label>
+        <textarea id="questionContent" placeholder="输入题目内容"></textarea>
+        <div class="upload-zone" id="questionUploadZone">📷 点击或拖拽上传题目图片</div>
+        <input type="file" id="questionImages" multiple accept="image/*" style="display:none;" />
+        <div id="questionImagesList" class="uploaded-images"></div>
+      </div>
+
+      <div class="form-group">
+        <label>答案 <button type="button" class="op-btn" id="toggleAnswerBtn" hidden>查看答案</button></label>
+        <div id="answerPanel">
+        <textarea id="answerContent" placeholder="输入答案内容"></textarea>
+        <div class="upload-zone" id="answerUploadZone">📷 点击或拖拽上传答案图片</div>
+        <input type="file" id="answerImages" multiple accept="image/*" style="display:none;" />
+        <div id="answerImagesList" class="uploaded-images"></div>
+        </div>
+      </div>
+    <section id="practiceSection" hidden style="padding:0 0 20px;">
+      <h3 style="margin-bottom:12px;font-weight:600;">回答问题</h3>
+      <div id="attemptHistory"></div>
+      <label for="practiceResponse" id="responseLabel" style="display:block;margin:12px 0 8px;"></label>
+      <textarea id="practiceResponse" placeholder="请输入本次回答，也可以上传手写回答图片" style="width:100%;min-height:120px;padding:12px;border:1px solid #d9d9d9;border-radius:6px;"></textarea>
+      <button type="button" id="responseUploadBtn" class="op-btn" style="margin-top:10px;">📷 上传回答图片（可多选）</button>
+      <input type="file" id="responseImages" multiple accept="image/*" hidden />
+      <p id="responseUploadStatus" role="status" style="font-size:12px;color:#64748b;margin-top:6px;">点击图片可放大查看</p>
+      <div id="responseImagesList" class="uploaded-images"></div>
+    </section>
+    </div>
+
+    <div class="drawer-footer">
+      <button class="btn-primary" id="saveBtn">保存</button>
+      <button class="btn-primary" id="wrongBtn" hidden style="background:#dc2626;">错误</button>
+      <button class="btn-primary" id="correctBtn" hidden style="background:#16a34a;">正确</button>
+    </div>
+  </div>
+
+  <!-- 类型弹窗 -->
+  <div id="typeModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 id="typeModalTitle">添加类型</h3>
+      <input type="text" id="typeNameInput" placeholder="请输入类型名称" />
+      <div class="modal-buttons">
+        <button class="btn-secondary" id="cancelTypeBtn">取消</button>
+        <button class="btn-primary2" id="saveTypeBtn">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="imagePreview" hidden role="dialog" aria-modal="true" aria-label="图片放大预览">
+    <div class="preview-toolbar"><button id="zoomOut">缩小 −</button><button id="zoomIn">放大 ＋</button><button id="zoomReset">适应屏幕</button><button id="closePreview">关闭 ×</button></div>
+    <div id="previewStage"><img id="previewPicture" alt="题目或答案图片预览" /></div>
+  </div>
+  <script>
+    let previewScale = 1;
+    let previewFocus = null;
+    function previewImage(src) {
+      previewFocus = document.activeElement;
+      document.getElementById("previewPicture").src = src;
+      document.getElementById("imagePreview").hidden = false;
+      setPreviewScale(1);
+      document.getElementById("closePreview").focus();
+    }
+    function setPreviewScale(scale) {
+      previewScale = Math.max(0.25, Math.min(5, scale));
+      const img = document.getElementById("previewPicture");
+      img.style.maxWidth = previewScale === 1 ? "90vw" : "none";
+      img.style.maxHeight = previewScale === 1 ? "80vh" : "none";
+      img.style.width = previewScale === 1 ? "auto" : `${90 * previewScale}vw`;
+    }
+    function closePreview() {
+      document.getElementById("imagePreview").hidden = true;
+      document.getElementById("previewPicture").removeAttribute("src");
+      if (previewFocus) previewFocus.focus();
+    }
+    document.getElementById("closePreview").onclick = closePreview;
+    document.getElementById("zoomIn").onclick = () => setPreviewScale(previewScale * 1.25);
+    document.getElementById("zoomOut").onclick = () => setPreviewScale(previewScale / 1.25);
+    document.getElementById("zoomReset").onclick = () => setPreviewScale(1);
+    document.getElementById("previewStage").onclick = e => { if (e.target.id === "previewStage") closePreview(); };
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closePreview(); });
+    const defaultTypes = ["侧面描写", "小标题", "主要内容", "环境描写", "点面结合"];
+    const STORAGE_DB = "magic-academy";
+    const STORAGE_STORE = "appState";
+    let diskBusy=false;
+    let localSaveQueue = Promise.resolve(true);
+    function status(message, warning=false) {
+      const el=document.getElementById("diskStatus"); el.textContent=message;
+      el.style.color=warning?"#a32923":"#48613b";
+    }
+    function snapshot() { return {app:"魔法学院",schemaVersion:1,updatedAt:new Date().toISOString(),questions:allData,types:typesList}; }
+    function openStorage() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(STORAGE_DB, 1);
+        request.onupgradeneeded = () => {
+          if (!request.result.objectStoreNames.contains(STORAGE_STORE)) request.result.createObjectStore(STORAGE_STORE);
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error("无法打开本地数据库"));
+      });
+    }
+    async function readLocalDocument() {
+      const db = await openStorage();
+      try {
+        return await new Promise((resolve, reject) => {
+          const request = db.transaction(STORAGE_STORE, "readonly").objectStore(STORAGE_STORE).get("main");
+          request.onsuccess = () => resolve(request.result || null);
+          request.onerror = () => reject(request.error);
+        });
+      } finally { db.close(); }
+    }
+    async function writeLocalDocument(doc) {
+      const db = await openStorage();
+      try {
+        await new Promise((resolve, reject) => {
+          const transaction = db.transaction(STORAGE_STORE, "readwrite");
+          transaction.objectStore(STORAGE_STORE).put(doc, "main");
+          transaction.oncomplete = resolve;
+          transaction.onerror = () => reject(transaction.error);
+          transaction.onabort = () => reject(transaction.error || new Error("本地数据写入已中止"));
+        });
+      } finally { db.close(); }
+    }
+    function validateDocument(doc) {
+      if (!doc || doc.schemaVersion !== 1 || !Array.isArray(doc.questions) || typeof doc.updatedAt !== "string" || !Number.isFinite(Date.parse(doc.updatedAt)))
+        throw new Error("JSON 格式不正确：需要 schemaVersion: 1、有效的 updatedAt 和 questions 数组");
+      const ids = new Set();
+      doc.questions.forEach(item => {
+        if (!item || !Number.isSafeInteger(item.id) || item.id < 1 || ids.has(item.id)) throw new Error("题目编号无效或重复");
+        ids.add(item.id);
+        for (const field of ["questionImages", "answerImages"])
+          if (item[field] !== undefined && (!Array.isArray(item[field]) || !item[field].every(validImage))) throw new Error("图片数据格式无效");
+        if (item.attempts !== undefined && (!Array.isArray(item.attempts) || item.attempts.some(a => !a || typeof a !== "object" || (a.images !== undefined && (!Array.isArray(a.images) || !a.images.every(validImage)))))) throw new Error("回答历史格式无效");
+      });
+      if (doc.types !== undefined && (!Array.isArray(doc.types) || !doc.types.every(t => typeof t === "string" && t.trim() && t !== "全部"))) throw new Error("类型格式无效");
+      return doc;
+    }
+    function validImage(src) { return typeof src === "string" && /^data:image\/(png|jpeg|jpg|webp|gif|bmp);base64,/i.test(src); }
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      })[character]);
+    }
+    function applyDocument(doc) {
+      allData = doc.questions;
+      typesList = [...new Set([...(doc.types || defaultTypes), ...allData.map(q => q.category).filter(t => typeof t === "string" && t && t !== "全部")])];
+      currentType = "全部"; editingId = null;
+      closeDrawer(); closeTypeModal();
+      document.getElementById("pageTitle").textContent = "全部错题";
+      updateCategoryOptions(); initTypesList(); renderTable();
+    }
+
+    function canModify() { return !diskBusy; }
+    async function persist() {
+      status("正在自动保存到本机…");
+      const operation = localSaveQueue.then(async () => {
+        try {
+          await writeLocalDocument(snapshot());
+          status(`已自动保存到本机 · ${new Date().toLocaleTimeString("zh-CN")}`);
+          return true;
+        } catch (error) {
+          console.error(error);
+          status("自动保存失败，请导出 JSON 备份。", true);
+          return false;
+        }
+      });
+      localSaveQueue = operation.catch(() => false);
+      return operation;
+    }
+    async function downloadData() {
+      if (pendingUploads) { alert("图片仍在处理中，请稍后保存。"); return; }
+      const serialized = JSON.stringify(snapshot(), null, 2);
+      const filename = `魔法学院-${new Date().toISOString().slice(0, 10)}.json`;
+      const file = new File([serialized], filename, { type: "application/json" });
+      try {
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: "魔法学院数据备份", text: "请选择“存储到文件”或 iCloud Drive" });
+          status(`已导出 ${filename}`);
+          return;
+        }
+      } catch (error) {
+        if (error.name === "AbortError") { status("已取消文件导出。", true); return; }
+        console.warn("文件分享失败，改用下载", error);
+      }
+      const blob = new Blob([serialized], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url; link.download = filename; document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      status(`已导出 ${filename}，请保存到“文件”App。`);
+    }
+    function initDiskStorage() {
+      const input=document.getElementById("mobileFileInput");
+      document.getElementById("openDataBtn").onclick=()=>{
+        if(pendingUploads) return;
+        if(allData.length && !confirm("导入 JSON 将替换当前数据和分类，确定继续吗？")) return;
+        input.click();
+      };
+      input.onchange=async()=>{
+        const file=input.files[0];input.value="";if(!file)return;
+        diskBusy=true;
+        try {
+          const doc=validateDocument(JSON.parse(await file.text()));
+          applyDocument(doc);
+          await persist();
+          status(`已导入 ${file.name} 并自动保存到本机。`);
+        }
+        catch(error){alert(`打开失败：${error.message}`);}
+        finally{diskBusy=false;}
+      };
+      document.getElementById("newDataBtn").onclick=downloadData;
+      document.getElementById("mobileMenuBtn").onclick=()=>document.getElementById("magicSidebar").classList.toggle("mobile-open");
+      document.getElementById("mobileShade").onclick=()=>document.getElementById("magicSidebar").classList.remove("mobile-open");
+      window.addEventListener("beforeunload",e=>{if(pendingUploads){e.preventDefault();e.returnValue="";}});
+      status("修改会自动保存在本机；可随时导出 JSON 到“文件”App备份。");
+    }
+    let attemptStartedAt = null;
+    let pendingUploads = 0;
+    let allData = [];
+    let typesList = [...defaultTypes];
+
+    let currentType = "全部";
+    let currentSort = { field: null, order: "asc" };
+    let editingId = null;
+    let currentImages = {
+      question: [],
+      answer: [],
+      response: []
+    };
+
+    document.addEventListener("DOMContentLoaded", async function () {
+      setInputDate();
+      bindEvents();
+      initDiskStorage();
+      try {
+        const saved = await readLocalDocument();
+        if (saved) {
+          applyDocument(validateDocument(saved));
+          status(`已恢复本机数据 · ${new Date(saved.updatedAt).toLocaleString("zh-CN")}`);
+        } else {
+          initTypesList();
+          renderTable();
+          updateCategoryOptions();
+        }
+      } catch (error) {
+        console.error(error);
+        initTypesList();
+        renderTable();
+        updateCategoryOptions();
+        status("读取本机数据失败，请通过“导入 JSON”恢复。", true);
+      }
+    });
+
+    function bindEvents() {
+      document.getElementById("responseUploadBtn").onclick = () => document.getElementById("responseImages").click();
+      document.getElementById("responseImages").addEventListener("change", e => handleImageUpload(e, "response"));
+      setInterval(renderTodayReviews, 60000);
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) renderTodayReviews(); });
+      document.getElementById("wrongBtn").onclick = () => submitAttempt(false);
+      document.getElementById("correctBtn").onclick = () => submitAttempt(true);
+      document.getElementById("toggleAnswerBtn").onclick = () => {
+        const panel = document.getElementById("answerPanel");
+        panel.hidden = !panel.hidden;
+        document.getElementById("toggleAnswerBtn").textContent = panel.hidden ? "查看答案" : "隐藏答案";
+      };
+      document.getElementById("createBtn").addEventListener("click", openNewDrawer);
+      document.getElementById("addTypeBtn").addEventListener("click", () => openTypeModal());
+      document.getElementById("closeDrawerBtn").addEventListener("click", closeDrawer);
+      document.getElementById("drawerOverlay").addEventListener("click", closeDrawer);
+      document.getElementById("saveBtn").addEventListener("click", saveRecord);
+
+      document.getElementById("saveTypeBtn").addEventListener("click", saveType);
+      document.getElementById("cancelTypeBtn").addEventListener("click", closeTypeModal);
+
+      document.getElementById("questionUploadZone").addEventListener("click", () => {
+        document.getElementById("questionImages").click();
+      });
+      document.getElementById("answerUploadZone").addEventListener("click", () => {
+        document.getElementById("answerImages").click();
+      });
+
+      document.getElementById("questionImages").addEventListener("change", (e) => {
+        handleImageUpload(e, "question");
+      });
+      document.getElementById("answerImages").addEventListener("change", (e) => {
+        handleImageUpload(e, "answer");
+      });
+
+      document.querySelectorAll("th[data-sort]").forEach(th => {
+        th.addEventListener("click", () => sortTable(th.dataset.sort));
+      });
+
+      document.getElementById("typeNameInput").addEventListener("keydown", function(e) {
+        if (e.key === "Enter") saveType();
+      });
+    }
+
+    function setInputDate() {
+      const today = new Date();
+      const y = today.getFullYear();
+      const m = String(today.getMonth() + 1).padStart(2, "0");
+      const d = String(today.getDate()).padStart(2, "0");
+      document.getElementById("inputDate").value = `${y}-${m}-${d}`;
+      updateReviewDates();
+    }
+
+    function updateReviewDates() {
+      const dateStr = document.getElementById("inputDate").value;
+      if (!dateStr) return;
+      const inputDate = new Date(dateStr);
+      const d1 = new Date(inputDate);
+      const d7 = new Date(inputDate);
+      const d21 = new Date(inputDate);
+      d7.setDate(d7.getDate() + 7);
+      d21.setDate(d21.getDate() + 21);
+
+      document.getElementById("reviewReminder").innerHTML = `
+        <div style="margin-bottom:8px;">📅 复习提醒</div>
+        <div style="font-size:13px; line-height:1.7;">
+          <div>第1天：${formatDateCN(d1)}</div>
+          <div>第7天：${formatDateCN(d7)}</div>
+          <div>第21天：${formatDateCN(d21)}</div>
+        </div>
+      `;
+    }
+
+    function formatDateCN(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function openTypeModal(editIndex = null) {
+      const modal = document.getElementById("typeModal");
+      const input = document.getElementById("typeNameInput");
+      const title = document.getElementById("typeModalTitle");
+
+      if (Number.isInteger(editIndex) && editIndex >= 0 && editIndex < typesList.length) {
+        title.textContent = "编辑类型";
+        input.value = typesList[editIndex];
+        input.dataset.editIndex = editIndex;
+      } else {
+        title.textContent = "添加类型";
+        input.value = "";
+        delete input.dataset.editIndex;
+      }
+
+      modal.classList.add("active");
+      setTimeout(() => input.focus(), 0);
+    }
+
+    function closeTypeModal() {
+      document.getElementById("typeModal").classList.remove("active");
+      document.getElementById("typeNameInput").value = "";
+      delete document.getElementById("typeNameInput").dataset.editIndex;
+    }
+
+    async function saveType() {
+      if (!canModify()) return;
+      const input = document.getElementById("typeNameInput");
+      const name = input.value.trim();
+
+      if (!name) {
+        alert("请输入类型名称");
+        return;
+      }
+
+      const editIndex = input.dataset.editIndex;
+      if (name === "全部" || typesList.some((value, index) => value === name && String(index) !== editIndex)) {
+        alert("该类型已存在或为系统保留名称"); return;
+      }
+      if (editIndex !== undefined) {
+        const oldName = typesList[parseInt(editIndex, 10)];
+        typesList[parseInt(editIndex, 10)] = name;
+        allData.forEach(item => { if (item.category === oldName) item.category = name; });
+        if (currentType === oldName) currentType = name;
+      } else {
+        if (typesList.includes(name)) {
+          alert("该类型已存在");
+          return;
+        }
+        typesList.push(name);
+      }
+
+      await persist();
+      closeTypeModal();
+      updateCategoryOptions();
+      initTypesList();
+      renderTable();
+    }
+
+    function editType(index) {
+      openTypeModal(index);
+    }
+
+    async function deleteType(index) {
+      if (!canModify()) return;
+      const typeName = typesList[index];
+      if (!confirm(`确定要删除“${typeName}”吗？`)) return;
+
+      typesList.splice(index, 1);
+      await persist();
+
+      if (currentType === typeName) {
+        currentType = "全部";
+      }
+
+      updateCategoryOptions();
+      initTypesList();
+      renderTable();
+    }
+
+    function updateCategoryOptions() {
+      const select = document.getElementById("categorySelect");
+      const old = select.value;
+      select.innerHTML = '<option value="">请选择分类</option>';
+      typesList.forEach(type => {
+        const opt = document.createElement("option");
+        opt.value = type;
+        opt.textContent = type;
+        select.appendChild(opt);
+      });
+      select.value = old;
+    }
+
+    function initTypesList() {
+      const list = document.getElementById("typesList");
+      list.innerHTML = "";
+
+      const allCount = allData.length;
+      const allItem = document.createElement("div");
+      allItem.className = `type-item p-4 mb-3 ${currentType === "全部" ? "active" : ""}`;
+      allItem.onclick = () => selectType("全部");
+      allItem.innerHTML = `
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="font-medium text-gray-900">全部</div>
+            <div class="text-sm text-gray-500">${allCount} 个错题</div>
+          </div>
+        </div>
+      `;
+      list.appendChild(allItem);
+
+      typesList.forEach((type, index) => {
+        const count = allData.filter(d => d.category === type).length;
+        const item = document.createElement("div");
+        item.className = `type-item p-4 mb-2 ${currentType === type ? "active" : ""}`;
+        item.onclick = () => selectType(type);
+
+        item.innerHTML = `
+          <div class="flex justify-between items-center">
+            <div>
+              <div class="font-medium text-gray-900">${escapeHtml(type)}</div>
+              <div class="text-sm text-gray-500">${count} 个错题</div>
+            </div>
+          </div>
+          <div class="type-actions">
+            <button class="action-btn edit" onclick="event.stopPropagation(); editType(${index})">编</button>
+            <button class="action-btn delete" onclick="event.stopPropagation(); deleteType(${index})">删</button>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function selectType(type) {
+      document.getElementById("magicSidebar").classList.remove("mobile-open");
+      currentType = type;
+      initTypesList();
+      renderTable();
+      document.getElementById("pageTitle").textContent = type === "全部" ? "全部错题" : `${type} - 错题列表`;
+    }
+
+    function sortTable(field) {
+      if (currentSort.field === field) {
+        currentSort.order = currentSort.order === "asc" ? "desc" : "asc";
+      } else {
+        currentSort.field = field;
+        currentSort.order = "asc";
+      }
+      updateSortIcons();
+      renderTable();
+    }
+
+    function updateSortIcons() {
+      document.querySelectorAll("th[data-sort] .sort-icon").forEach(icon => {
+        icon.classList.remove("asc", "desc");
+      });
+      if (currentSort.field) {
+        const th = document.querySelector(`th[data-sort="${currentSort.field}"]`);
+        if (th) th.querySelector(".sort-icon").classList.add(currentSort.order);
+      }
+    }
+
+    function dueToday(item, today) {
+      const dates = Array.isArray(item.reviewDate) ? item.reviewDate : getReviewDates(item.createDate);
+      return dates.includes(today) && !(Array.isArray(item.attempts) && item.attempts.some(attempt =>
+        attempt.submittedAt && formatDateCN(new Date(attempt.submittedAt)) === today));
+    }
+
+    function renderTodayReviews() {
+      const today = formatDateCN(new Date());
+      const due = allData.filter(item => dueToday(item, today));
+      document.getElementById("todayCount").textContent = `（${due.length} 题）`;
+      const list = document.getElementById("todayReviewList");
+      list.innerHTML = "";
+      if (!due.length) { list.textContent = "今天的复习任务已完成，或暂无安排的复习题目。"; return; }
+      due.forEach(item => {
+        const row = document.createElement("div");
+        row.style.cssText = "display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid #dbeafe;";
+        const text = document.createElement("span");
+        const question = (item.question || "图片题目").replace(/\s+/g, " ");
+        text.textContent = `第 ${item.id} 题 · ${item.category || "未分类"} · ${item.source || "无来源"} · ${question.slice(0, 45)}${question.length > 45 ? "…" : ""}`;
+        const button = document.createElement("button");
+        button.className = "op-btn"; button.style.whiteSpace = "nowrap"; button.textContent = "开始复习";
+        button.onclick = () => editRecord(item.id);
+        row.appendChild(text); row.appendChild(button); list.appendChild(row);
+      });
+    }
+
+    function renderTable() {
+      renderTodayReviews();
+      const tbody = document.getElementById("tableBody");
+      const emptyState = document.getElementById("emptyState");
+
+      let filtered = currentType === "全部"
+        ? [...allData]
+        : allData.filter(d => d.category === currentType);
+
+      if (currentSort.field) {
+        filtered.sort((a, b) => {
+          let av = a[currentSort.field];
+          let bv = b[currentSort.field];
+
+          if (typeof av === "number" && typeof bv === "number") {
+            return currentSort.order === "asc" ? av - bv : bv - av;
+          }
+
+          if (Array.isArray(av)) av = av.join(" / ");
+          if (Array.isArray(bv)) bv = bv.join(" / ");
+
+          av = String(av ?? "");
+          bv = String(bv ?? "");
+
+          return currentSort.order === "asc"
+            ? av.localeCompare(bv, "zh-CN")
+            : bv.localeCompare(av, "zh-CN");
+        });
+      }
+
+      tbody.innerHTML = "";
+
+      if (filtered.length === 0) {
+        emptyState.style.display = "block";
+        return;
+      }
+      emptyState.style.display = "none";
+
+      filtered.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${escapeHtml(item.id)}</td>
+          <td>${escapeHtml(item.category || "")}</td>
+          <td>${escapeHtml(item.source || "")}</td>
+          <td>${escapeHtml(item.errors ?? 0)}</td>
+          <td>${escapeHtml(item.correct ?? 0)}</td>
+          <td>${escapeHtml(Array.isArray(item.reviewDate) ? item.reviewDate.join(" / ") : "")}</td>
+          <td>
+            <div class="operation-buttons">
+              <button class="op-btn" onclick="event.stopPropagation(); editRecord(${item.id})">做题</button>
+              <button class="op-btn delete-btn" onclick="event.stopPropagation(); deleteData(${item.id})">删除</button>
+            </div>
+          </td>
+        `;
+        tr.addEventListener("click", () => editRecord(item.id));
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openNewDrawer() {
+      if (!canModify()) return;
+      if (pendingUploads) return;
+      editingId = null;
+      setPracticeMode(false);
+      document.getElementById("drawerTitle").textContent = "新建错题";
+      clearForm();
+      setInputDate();
+      updateCategoryOptions();
+      document.getElementById("categorySelect").value = currentType === "全部" ? "" : currentType;
+      openDrawer();
+    }
+
+    function editRecord(id) {
+      if (diskBusy) return;
+      if (pendingUploads) return;
+      const data = allData.find(d => d.id === id);
+      if (!data) return;
+
+      editingId = id;
+      document.getElementById("drawerTitle").textContent = "做题";
+      setPracticeMode(true);
+      renderAttempts(data);
+
+      document.getElementById("inputDate").value = data.createDate || "";
+      document.getElementById("categorySelect").value = data.category || "";
+      document.getElementById("sourceSelect").value = data.sourceType || "";
+      document.getElementById("pageInput").value = data.page || "";
+      document.getElementById("questionContent").value = data.question || "";
+      document.getElementById("answerContent").value = data.answer || "";
+
+      currentImages.question = Array.isArray(data.questionImages) ? [...data.questionImages] : [];
+      currentImages.answer = Array.isArray(data.answerImages) ? [...data.answerImages] : [];
+
+      renderImages("question");
+      renderImages("answer");
+      updateReviewDates();
+      updateCategoryOptions();
+      openDrawer();
+    }
+
+    function timestamp(value) {
+      const d = new Date(value);
+      const pad = n => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+
+    function setPracticeMode(practice) {
+      document.getElementById("saveBtn").hidden = practice;
+      document.getElementById("wrongBtn").hidden = !practice;
+      document.getElementById("correctBtn").hidden = !practice;
+      document.getElementById("practiceSection").hidden = !practice;
+      document.getElementById("toggleAnswerBtn").hidden = !practice;
+      document.getElementById("answerPanel").hidden = practice;
+      document.getElementById("toggleAnswerBtn").textContent = "查看答案";
+      for (const id of ["questionContent", "answerContent", "pageInput"]) document.getElementById(id).readOnly = practice;
+      for (const id of ["categorySelect", "sourceSelect"]) document.getElementById(id).disabled = practice;
+      for (const id of ["questionUploadZone", "answerUploadZone"]) document.getElementById(id).hidden = practice;
+      document.getElementById("practiceResponse").value = "";
+      currentImages.response = [];
+      document.getElementById("responseImages").value = "";
+      renderImages("response");
+    }
+
+    function renderAttempts(data) {
+      const history = document.getElementById("attemptHistory");
+      history.innerHTML = "";
+      const attempts = Array.isArray(data.attempts) ? data.attempts : [];
+      attempts.forEach((attempt, index) => {
+        const card = document.createElement("div");
+        card.style.cssText = "padding:12px;margin-bottom:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;";
+        const heading = document.createElement("div");
+        heading.style.color = attempt.correct ? "#15803d" : "#dc2626";
+        heading.textContent = `回答问题 ${index + 1} · ${timestamp(attempt.submittedAt)} · ${attempt.correct ? "正确" : "错误"}`;
+        const content = document.createElement("div");
+        content.style.cssText = "white-space:pre-wrap;overflow-wrap:anywhere;margin-top:8px;";
+        content.textContent = attempt.response || "（未填写回答）";
+        card.appendChild(heading); card.appendChild(content);
+        const images = document.createElement("div"); images.className = "uploaded-images";
+        (Array.isArray(attempt.images) ? attempt.images : []).forEach(src => {
+          const img = document.createElement("img"); img.src = src; img.alt = "历史回答图片，点击放大";
+          img.style.cssText = "width:96px;height:96px;object-fit:cover;border-radius:6px;cursor:zoom-in;";
+          img.tabIndex = 0; img.onclick = () => previewImage(src);
+          img.onkeydown = e => { if (e.key === "Enter") previewImage(src); };
+          images.appendChild(img);
+        });
+        card.appendChild(images); history.appendChild(card);
+      });
+      attemptStartedAt = new Date().toISOString();
+      document.getElementById("responseLabel").textContent = `回答问题 ${attempts.length + 1} · ${timestamp(attemptStartedAt)}（本次）`;
+    }
+
+    async function submitAttempt(correct) {
+      if (!canModify()) return;
+      if (pendingUploads) { alert("图片仍在处理中，请稍后提交"); return; }
+      const item = allData.find(d => d.id === editingId);
+      if (!item) return;
+      const submittedAt = new Date().toISOString();
+      if (!Array.isArray(item.attempts)) item.attempts = [];
+      item.attempts.push({response:document.getElementById("practiceResponse").value.trim(), correct, images:[...currentImages.response], startedAt:attemptStartedAt, submittedAt});
+      const field = correct ? "correct" : "errors";
+      item[field] = (Number(item[field]) || 0) + 1;
+      await persist();
+      initTypesList(); renderTable(); closeDrawer();
+    }
+
+    function openDrawer() {
+      document.getElementById("drawer").classList.add("active");
+      document.getElementById("drawerOverlay").classList.add("active");
+    }
+
+    function closeDrawer() {
+      if (pendingUploads) { alert("图片仍在处理中，请稍后关闭"); return; }
+      document.getElementById("drawer").classList.remove("active");
+      document.getElementById("drawerOverlay").classList.remove("active");
+    }
+
+    function clearForm() {
+      document.getElementById("categorySelect").value = "";
+      document.getElementById("sourceSelect").value = "";
+      document.getElementById("pageInput").value = "";
+      document.getElementById("questionContent").value = "";
+      document.getElementById("answerContent").value = "";
+      currentImages.question = [];
+      currentImages.answer = [];
+      renderImages("question");
+      renderImages("answer");
+    }
+
+    async function handleImageUpload(event, type) {
+      const files = Array.from(event.target.files);
+      event.target.value = "";
+      pendingUploads++;
+      document.getElementById("responseUploadStatus").textContent = "图片处理中…";
+      document.getElementById("saveBtn").textContent = "图片处理中…";
+      try {
+        const results = await Promise.all(files.map(file => new Promise((resolve, reject) => {
+          if (!file.type.startsWith("image/")) { reject(new Error("请选择图片文件")); return; }
+          const reader = new FileReader();
+          reader.onerror = () => reject(new Error("图片读取失败，请重新上传"));
+          reader.onload = () => {
+            const img = new Image();
+            img.onerror = () => reject(new Error("图片无法解码，请使用 JPG 或 PNG 图片"));
+            img.onload = () => {
+              const scale = Math.min(1, 2000 / Math.max(img.width, img.height));
+              const canvas = document.createElement("canvas");
+              canvas.width = Math.max(1, Math.round(img.width * scale));
+              canvas.height = Math.max(1, Math.round(img.height * scale));
+              const ctx = canvas.getContext("2d");
+              ctx.fillStyle = "white"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              resolve(canvas.toDataURL("image/jpeg", 0.88));
             };
-            
-            questions.push(newQuestion);
-            clearForm();
-            renderAll();
-            const saved = await saveData();
-            alert(saved ? '✓ 错题已添加并保存到本地 JSON' : '✓ 错题已添加，但本地文件暂未写入，请查看顶部存储状态');
-        }
-        
-        function clearForm() {
-            document.getElementById('subject').value = '';
-            document.getElementById('question').value = '';
-            document.getElementById('reason').value = '';
-        }
-        
-        async function deleteQuestion(id) {
-            if (!canEdit()) return;
-            if (confirm('确定要删除这道错题吗？')) {
-                questions = questions.filter(q => q.id !== String(id));
-                renderAll();
-                await saveData();
-            }
-        }
-        
-        async function increaseErrorCount(id) {
-            if (!canEdit()) return;
-            const q = questions.find(q => q.id === String(id));
-            if (q) {
-                q.errorCount++;
-                renderAll();
-                await saveData();
-            }
-        }
-        
-        function filterBySubject(subject) {
-            currentFilter = subject;
-            renderFilters();
-            renderQuestions();
-        }
-        
-        function renderQuestions() {
-            const container = document.getElementById('questionsList');
-            const filtered = currentFilter 
-                ? questions.filter(q => q.subject === currentFilter)
-                : questions;
-            
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📝</div>
-                        <div>${currentFilter ? '这个科目暂无错题' : '暂无错题，加油学习！'}</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = filtered.map(q => `
-                <div class="question-card">
-                    <div class="card-header">
-                        <span class="subject-badge">${esc(q.subject)}</span>
-                        <span class="error-count">错 ${esc(q.errorCount)} 次</span>
-                    </div>
-                    <div class="question-content">${esc(q.question)}</div>
-                    ${q.reason ? `<div style="color: #666; font-size: 13px;">原因：${esc(q.reason)}</div>` : ''}
-                    <div class="card-footer">
-                        <span class="date">${esc(q.date)}</span>
-                        <div class="card-actions">
-                            <button class="btn-small" data-action="increase" data-id="${esc(q.id)}">再错一次</button>
-                            <button class="btn-small btn-delete" data-action="delete" data-id="${esc(q.id)}">删除</button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        function renderFilters() {
-            const subjects = ['全部', ...new Set(questions.map(q => q.subject))];
-            const filterSection = document.getElementById('filterSection');
+            img.src = reader.result;
+          };
+          reader.readAsDataURL(file);
+        })));
+        currentImages[type].push(...results);
+        renderImages(type);
+      } catch (error) { alert(error.message); }
+      finally { pendingUploads--; document.getElementById("responseUploadStatus").textContent = pendingUploads ? "图片处理中…" : "点击图片可放大查看"; document.getElementById("saveBtn").textContent = pendingUploads ? "图片处理中…" : "保存"; }
+    }
 
-            if (currentFilter && !subjects.includes(currentFilter)) currentFilter = '';
-            
-            filterSection.innerHTML = subjects.map(subject => `
-                <button class="filter-btn ${subject === '全部' || subject === currentFilter ? 'active' : ''}"
-                        data-subject="${esc(subject === '全部' ? '' : subject)}">${esc(subject)}</button>
-            `).join('');
+    function renderImages(type) {
+      const list = document.getElementById(type === "question" ? "questionImagesList" : type === "answer" ? "answerImagesList" : "responseImagesList");
+      list.innerHTML = "";
+
+      currentImages[type].forEach((src, index) => {
+        const item = document.createElement("div");
+        item.className = "image-item";
+        item.innerHTML = `
+          <img src="${src}" alt="图片预览" />
+          <button class="image-remove" title="删除">×</button>
+        `;
+        const thumbnail = item.querySelector("img");
+        thumbnail.style.cursor = "zoom-in";
+        thumbnail.title = "点击放大查看";
+        thumbnail.tabIndex = 0;
+        thumbnail.addEventListener("click", () => previewImage(src));
+        thumbnail.addEventListener("keydown", e => { if (e.key === "Enter") previewImage(src); });
+        item.querySelector(".image-remove").hidden = editingId !== null && type !== "response";
+        item.querySelector(".image-remove").addEventListener("click", () => {
+          currentImages[type].splice(index, 1);
+          renderImages(type);
+        });
+        list.appendChild(item);
+      });
+    }
+
+    async function saveRecord() {
+      if (!canModify()) return;
+      if (pendingUploads) { alert("图片仍在处理中，请稍后点击保存"); return; }
+      const category = document.getElementById("categorySelect").value.trim();
+      const sourceType = document.getElementById("sourceSelect").value.trim();
+      const page = document.getElementById("pageInput").value.trim();
+      const question = document.getElementById("questionContent").value.trim();
+      const answer = document.getElementById("answerContent").value.trim();
+      const createDate = document.getElementById("inputDate").value;
+
+      if (!category) {
+        alert("请选择所属分类后再保存");
+        document.getElementById("categorySelect").focus();
+        return;
+      }
+
+      const sourceDisplay = sourceType && page ? `${sourceType} P${page}` : sourceType || "-";
+
+      if (editingId !== null) {
+        const item = allData.find(d => d.id === editingId);
+        if (item) {
+          item.category = category;
+          item.source = sourceDisplay;
+          item.sourceType = sourceType;
+          item.page = page;
+          item.question = question;
+          item.answer = answer;
+          item.questionImages = [...currentImages.question];
+          item.answerImages = [...currentImages.answer];
+          item.createDate = createDate;
+          item.reviewDate = getReviewDates(createDate);
         }
-        
-        function updateStats() {
-            const totalQuestions = questions.length;
-            const totalErrors = questions.reduce((sum, q) => sum + q.errorCount, 0);
-            const subjects = new Set(questions.map(q => q.subject));
-            
-            document.getElementById('totalQuestions').textContent = totalQuestions;
-            document.getElementById('totalErrors').textContent = totalErrors;
-            document.getElementById('subjects').textContent = subjects.size;
-            
-            const chartSection = document.getElementById('chartSection');
-            if (totalQuestions > 0) {
-                chartSection.style.display = 'block';
-                
-                const subjectStats = {};
-                questions.forEach(q => {
-                    subjectStats[q.subject] = (subjectStats[q.subject] || 0) + 1;
-                });
-                
-                const chart = document.getElementById('chart');
-                chart.innerHTML = Object.entries(subjectStats).map(([subject, count]) => `
-                    <div class="chart-item">
-                        <div class="chart-item-label">${subject}</div>
-                        <div class="chart-item-value">${count}</div>
-                    </div>
-                `).join('');
-            } else {
-                chartSection.style.display = 'none';
-                document.getElementById('chart').innerHTML = '';
-            }
-        }
-        
-        function renderAll() {
-            renderQuestions();
-            renderFilters();
-            updateStats();
-        }
+      } else {
+        const newData = {
+          id: generateId(),
+          category,
+          source: sourceDisplay,
+          sourceType,
+          page,
+          question,
+          answer,
+          questionImages: [...currentImages.question],
+          answerImages: [...currentImages.answer],
+          errors: 0,
+          correct: 0,
+          createDate,
+          reviewDate: getReviewDates(createDate)
+        };
+        allData.push(newData);
+      }
 
-        function esc(value) {
-            return String(value ?? '').replace(/[&<>"']/g, character => ({
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-            })[character]);
-        }
+      await persist();
+      selectType(category);
+      closeDrawer();
+    }
 
-        function canEdit() {
-            if (!loadFailed) return true;
-            alert('浏览器本地存储不可用。请关闭无痕模式，并确认没有清理网站数据。');
-            return false;
-        }
+    function getReviewDates(dateStr) {
+      if (!dateStr) return [];
+      const base = new Date(dateStr);
+      const d1 = new Date(base);
+      const d7 = new Date(base);
+      const d21 = new Date(base);
+      d7.setDate(d7.getDate() + 7);
+      d21.setDate(d21.getDate() + 21);
+      return [formatDateCN(d1), formatDateCN(d7), formatDateCN(d21)];
+    }
 
-        function openDatabase() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
-                request.onupgradeneeded = () => {
-                    if (!request.result.objectStoreNames.contains(DB_STORE)) {
-                        request.result.createObjectStore(DB_STORE);
-                    }
-                };
-                request.onsuccess = () => resolve(request.result);
-                request.onerror = () => reject(request.error || new Error('无法打开 IndexedDB'));
-            });
-        }
+    function generateId() {
+      return allData.length ? Math.max(...allData.map(d => d.id || 0)) + 1 : 1;
+    }
 
-        async function readState() {
-            const database = await openDatabase();
-            try {
-                return await new Promise((resolve, reject) => {
-                    const request = database
-                        .transaction(DB_STORE, 'readonly')
-                        .objectStore(DB_STORE)
-                        .get('main');
-                    request.onsuccess = () => resolve(request.result || null);
-                    request.onerror = () => reject(request.error);
-                });
-            } finally {
-                database.close();
-            }
-        }
+    async function deleteData(id) {
+      if (!canModify()) return;
+      if (!confirm("确定要删除这条记录吗？")) return;
+      allData = allData.filter(d => d.id !== id);
+      await persist();
+      initTypesList();
+      renderTable();
+    }
 
-        async function writeState(payload) {
-            const database = await openDatabase();
-            try {
-                await new Promise((resolve, reject) => {
-                    const transaction = database.transaction(DB_STORE, 'readwrite');
-                    transaction.objectStore(DB_STORE).put(payload, 'main');
-                    transaction.oncomplete = resolve;
-                    transaction.onerror = () => reject(transaction.error);
-                    transaction.onabort = () => reject(transaction.error || new Error('IndexedDB 写入已中止'));
-                });
-            } finally {
-                database.close();
-            }
-        }
+    // 点击弹窗外层关闭
+    document.getElementById("typeModal").addEventListener("click", function(e) {
+      if (e.target === this) closeTypeModal();
+    });
 
-        function setAutosaveStatus(message = '', isError = false) {
-            const status = document.getElementById('autosaveStatus');
-            if (message) {
-                status.textContent = message;
-            } else if (lastSavedAt) {
-                const date = new Date(lastSavedAt);
-                status.textContent = Number.isNaN(date.getTime())
-                    ? '已自动保存到本机'
-                    : `已自动保存到本机 · ${date.toLocaleString('zh-CN')}`;
-            } else {
-                status.textContent = '正在读取本机数据...';
-            }
-            status.className = `autosave-status${isError ? ' error' : ''}`;
-        }
-
-        async function loadInitialData() {
-            bindUi();
-
-            if (!window.indexedDB) {
-                loadFailed = true;
-                renderAll();
-                setAutosaveStatus('当前浏览器不支持 IndexedDB', true);
-                return;
-            }
-
-            try {
-                const payload = await readState();
-                questions = Array.isArray(payload?.questions) ? payload.questions : [];
-                lastSavedAt = payload?.updatedAt || null;
-                loadFailed = false;
-                renderAll();
-                setAutosaveStatus();
-            } catch (error) {
-                console.error(error);
-                loadFailed = true;
-                questions = [];
-                renderAll();
-                setAutosaveStatus(`数据读取失败：${String(error)}`, true);
-            }
-        }
-
-        function saveData() {
-            if (loadFailed) {
-                setAutosaveStatus('本地存储不可用，修改未保存', true);
-                return Promise.resolve(false);
-            }
-
-            const payload = {
-                app: '我的错题本',
-                schemaVersion: SCHEMA_VERSION,
-                updatedAt: new Date().toISOString(),
-                questions: questions.map(question => ({
-                    id: String(question.id),
-                    subject: question.subject,
-                    question: question.question,
-                    reason: question.reason,
-                    errorCount: question.errorCount,
-                    date: question.date
-                }))
-            };
-
-            pendingWrites++;
-            setAutosaveStatus('正在自动保存...');
-            const operation = saveQueue
-                .then(async () => {
-                    try {
-                        await writeState(payload);
-                        lastSavedAt = payload.updatedAt;
-                        setAutosaveStatus();
-                        return true;
-                    } catch (error) {
-                        console.error(error);
-                        setAutosaveStatus(`自动保存失败：${String(error)}`, true);
-                        return false;
-                    }
-                })
-                .finally(() => {
-                    pendingWrites = Math.max(0, pendingWrites - 1);
-                });
-
-            saveQueue = operation.catch(() => false);
-            return operation;
-        }
-
-        function bindUi() {
-            document.getElementById('filterSection').addEventListener('click', event => {
-                const button = event.target.closest('.filter-btn');
-                if (button) filterBySubject(button.dataset.subject || '');
-            });
-            document.getElementById('questionsList').addEventListener('click', event => {
-                const button = event.target.closest('button[data-action]');
-                if (!button) return;
-                if (button.dataset.action === 'delete') deleteQuestion(button.dataset.id);
-                if (button.dataset.action === 'increase') increaseErrorCount(button.dataset.id);
-            });
-            window.addEventListener('beforeunload', event => {
-                if (pendingWrites > 0) {
-                    event.preventDefault();
-                    event.returnValue = '';
-                }
-            });
-        }
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js').catch(error => {
-                    console.warn('Service Worker 注册失败', error);
-                });
-            });
-        }
-
-        loadInitialData();
-    </script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js").catch(error => {
+          console.warn("Service Worker 注册失败", error);
+        });
+      });
+    }
+  </script>
 </body>
 </html>

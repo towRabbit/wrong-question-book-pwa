@@ -1,4 +1,5 @@
-const CACHE_NAME = 'wrong-question-book-v1';
+const CACHE_NAME = 'magic-academy-v1';
+const TAILWIND_URL = 'https://cdn.tailwindcss.com/';
 const APP_SHELL = [
   './',
   './index.html',
@@ -11,7 +12,16 @@ const APP_SHELL = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
+      .then(async cache => {
+        await cache.addAll(APP_SHELL);
+        try {
+          const request = new Request(TAILWIND_URL, { mode: 'no-cors' });
+          const response = await fetch(request);
+          await cache.put(request, response);
+        } catch (error) {
+          console.warn('Tailwind 离线缓存失败，页面仍会使用内置样式。', error);
+        }
+      })
       .then(() => self.skipWaiting())
   );
 });
@@ -50,7 +60,7 @@ self.addEventListener('fetch', event => {
         return cached;
       }
       return fetch(event.request).then(response => {
-        if (response.ok) {
+        if (response.ok || response.type === 'opaque') {
           const copy = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
         }
