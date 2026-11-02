@@ -1,0 +1,749 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="我的错题本">
+    <title>我的错题本</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+
+        .autosave-status {
+            margin-top: 14px;
+            color: rgba(255, 255, 255, 0.82);
+            font-size: 12px;
+            line-height: 1.4;
+            min-height: 17px;
+        }
+
+        .autosave-status.error {
+            color: #ffe3e3;
+            font-weight: bold;
+        }
+        
+        .input-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.2);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-add {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-clear {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .btn-clear:hover {
+            background: #e0e0e0;
+        }
+        
+        .filter-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 8px 15px;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .questions-list {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .question-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+        
+        .question-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .subject-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .error-count {
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .question-content {
+            margin: 10px 0;
+            color: #333;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .date {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-small {
+            padding: 5px 12px;
+            font-size: 12px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-small:hover {
+            background: #ddd;
+        }
+        
+        .btn-delete {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background: #ee5a52;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .stats-chart {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .chart-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .chart-item-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .chart-item-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 0;
+                background: white;
+            }
+
+            .container {
+                min-height: 100vh;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            .header {
+                padding: calc(24px + env(safe-area-inset-top)) 16px 24px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .input-section {
+                padding: 16px;
+            }
+
+            input, select, textarea {
+                font-size: 16px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 我的错题本</h1>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalQuestions">0</span>
+                    <div>总错题数</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="totalErrors">0</span>
+                    <div>总错次数</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="subjects">0</span>
+                    <div>科目数</div>
+                </div>
+            </div>
+            <div class="autosave-status" id="autosaveStatus" aria-live="polite">正在读取本地数据...</div>
+        </div>
+        
+        <div class="content">
+            <div class="input-section">
+                <h3 style="margin-bottom: 15px; color: #333;">➕ 录入错题</h3>
+                
+                <div class="form-group">
+                    <label>科目</label>
+                    <select id="subject">
+                        <option value="">选择科目</option>
+                        <option value="语文">语文</option>
+                        <option value="数学">数学</option>
+                        <option value="英语">英语</option>
+                        <option value="物理">物理</option>
+                        <option value="化学">化学</option>
+                        <option value="生物">生物</option>
+                        <option value="历史">历史</option>
+                        <option value="地理">地理</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>错题内容</label>
+                    <textarea id="question" placeholder="请输入错题内容或拍照上传题目..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>出错原因</label>
+                    <input type="text" id="reason" placeholder="例如：粗心、不会、理解错误...">
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn-add" onclick="addQuestion()">✓ 添加错题</button>
+                    <button class="btn-clear" onclick="clearForm()">清空</button>
+                </div>
+            </div>
+            
+            <div class="filter-section" id="filterSection">
+                <button class="filter-btn active" data-subject="">全部</button>
+            </div>
+            
+            <div id="questionsList" class="questions-list">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <div>暂无错题，加油学习！</div>
+                </div>
+            </div>
+            
+            <div id="chartSection" style="display: none; margin-top: 30px;">
+                <h3 style="margin-bottom: 15px; color: #333;">📊 统计数据</h3>
+                <div class="stats-chart" id="chart"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        'use strict';
+
+        const DB_NAME = 'wrong-question-book';
+        const DB_VERSION = 1;
+        const DB_STORE = 'appState';
+        const SCHEMA_VERSION = 1;
+
+        let questions = [];
+        let currentFilter = '';
+        let loadFailed = false;
+        let lastSavedAt = null;
+        let saveQueue = Promise.resolve(true);
+        let pendingWrites = 0;
+        
+        async function addQuestion() {
+            if (!canEdit()) return;
+            const subject = document.getElementById('subject').value;
+            const question = document.getElementById('question').value;
+            const reason = document.getElementById('reason').value;
+            
+            if (!subject || !question) {
+                alert('请选择科目并输入错题内容');
+                return;
+            }
+            
+            const newQuestion = {
+                id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                subject,
+                question,
+                reason,
+                errorCount: 1,
+                date: new Date().toLocaleDateString('zh-CN')
+            };
+            
+            questions.push(newQuestion);
+            clearForm();
+            renderAll();
+            const saved = await saveData();
+            alert(saved ? '✓ 错题已添加并保存到本地 JSON' : '✓ 错题已添加，但本地文件暂未写入，请查看顶部存储状态');
+        }
+        
+        function clearForm() {
+            document.getElementById('subject').value = '';
+            document.getElementById('question').value = '';
+            document.getElementById('reason').value = '';
+        }
+        
+        async function deleteQuestion(id) {
+            if (!canEdit()) return;
+            if (confirm('确定要删除这道错题吗？')) {
+                questions = questions.filter(q => q.id !== String(id));
+                renderAll();
+                await saveData();
+            }
+        }
+        
+        async function increaseErrorCount(id) {
+            if (!canEdit()) return;
+            const q = questions.find(q => q.id === String(id));
+            if (q) {
+                q.errorCount++;
+                renderAll();
+                await saveData();
+            }
+        }
+        
+        function filterBySubject(subject) {
+            currentFilter = subject;
+            renderFilters();
+            renderQuestions();
+        }
+        
+        function renderQuestions() {
+            const container = document.getElementById('questionsList');
+            const filtered = currentFilter 
+                ? questions.filter(q => q.subject === currentFilter)
+                : questions;
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <div>${currentFilter ? '这个科目暂无错题' : '暂无错题，加油学习！'}</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filtered.map(q => `
+                <div class="question-card">
+                    <div class="card-header">
+                        <span class="subject-badge">${esc(q.subject)}</span>
+                        <span class="error-count">错 ${esc(q.errorCount)} 次</span>
+                    </div>
+                    <div class="question-content">${esc(q.question)}</div>
+                    ${q.reason ? `<div style="color: #666; font-size: 13px;">原因：${esc(q.reason)}</div>` : ''}
+                    <div class="card-footer">
+                        <span class="date">${esc(q.date)}</span>
+                        <div class="card-actions">
+                            <button class="btn-small" data-action="increase" data-id="${esc(q.id)}">再错一次</button>
+                            <button class="btn-small btn-delete" data-action="delete" data-id="${esc(q.id)}">删除</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderFilters() {
+            const subjects = ['全部', ...new Set(questions.map(q => q.subject))];
+            const filterSection = document.getElementById('filterSection');
+
+            if (currentFilter && !subjects.includes(currentFilter)) currentFilter = '';
+            
+            filterSection.innerHTML = subjects.map(subject => `
+                <button class="filter-btn ${subject === '全部' || subject === currentFilter ? 'active' : ''}"
+                        data-subject="${esc(subject === '全部' ? '' : subject)}">${esc(subject)}</button>
+            `).join('');
+        }
+        
+        function updateStats() {
+            const totalQuestions = questions.length;
+            const totalErrors = questions.reduce((sum, q) => sum + q.errorCount, 0);
+            const subjects = new Set(questions.map(q => q.subject));
+            
+            document.getElementById('totalQuestions').textContent = totalQuestions;
+            document.getElementById('totalErrors').textContent = totalErrors;
+            document.getElementById('subjects').textContent = subjects.size;
+            
+            const chartSection = document.getElementById('chartSection');
+            if (totalQuestions > 0) {
+                chartSection.style.display = 'block';
+                
+                const subjectStats = {};
+                questions.forEach(q => {
+                    subjectStats[q.subject] = (subjectStats[q.subject] || 0) + 1;
+                });
+                
+                const chart = document.getElementById('chart');
+                chart.innerHTML = Object.entries(subjectStats).map(([subject, count]) => `
+                    <div class="chart-item">
+                        <div class="chart-item-label">${subject}</div>
+                        <div class="chart-item-value">${count}</div>
+                    </div>
+                `).join('');
+            } else {
+                chartSection.style.display = 'none';
+                document.getElementById('chart').innerHTML = '';
+            }
+        }
+        
+        function renderAll() {
+            renderQuestions();
+            renderFilters();
+            updateStats();
+        }
+
+        function esc(value) {
+            return String(value ?? '').replace(/[&<>"']/g, character => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+            })[character]);
+        }
+
+        function canEdit() {
+            if (!loadFailed) return true;
+            alert('浏览器本地存储不可用。请关闭无痕模式，并确认没有清理网站数据。');
+            return false;
+        }
+
+        function openDatabase() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onupgradeneeded = () => {
+                    if (!request.result.objectStoreNames.contains(DB_STORE)) {
+                        request.result.createObjectStore(DB_STORE);
+                    }
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error || new Error('无法打开 IndexedDB'));
+            });
+        }
+
+        async function readState() {
+            const database = await openDatabase();
+            try {
+                return await new Promise((resolve, reject) => {
+                    const request = database
+                        .transaction(DB_STORE, 'readonly')
+                        .objectStore(DB_STORE)
+                        .get('main');
+                    request.onsuccess = () => resolve(request.result || null);
+                    request.onerror = () => reject(request.error);
+                });
+            } finally {
+                database.close();
+            }
+        }
+
+        async function writeState(payload) {
+            const database = await openDatabase();
+            try {
+                await new Promise((resolve, reject) => {
+                    const transaction = database.transaction(DB_STORE, 'readwrite');
+                    transaction.objectStore(DB_STORE).put(payload, 'main');
+                    transaction.oncomplete = resolve;
+                    transaction.onerror = () => reject(transaction.error);
+                    transaction.onabort = () => reject(transaction.error || new Error('IndexedDB 写入已中止'));
+                });
+            } finally {
+                database.close();
+            }
+        }
+
+        function setAutosaveStatus(message = '', isError = false) {
+            const status = document.getElementById('autosaveStatus');
+            if (message) {
+                status.textContent = message;
+            } else if (lastSavedAt) {
+                const date = new Date(lastSavedAt);
+                status.textContent = Number.isNaN(date.getTime())
+                    ? '已自动保存到本机'
+                    : `已自动保存到本机 · ${date.toLocaleString('zh-CN')}`;
+            } else {
+                status.textContent = '正在读取本机数据...';
+            }
+            status.className = `autosave-status${isError ? ' error' : ''}`;
+        }
+
+        async function loadInitialData() {
+            bindUi();
+
+            if (!window.indexedDB) {
+                loadFailed = true;
+                renderAll();
+                setAutosaveStatus('当前浏览器不支持 IndexedDB', true);
+                return;
+            }
+
+            try {
+                const payload = await readState();
+                questions = Array.isArray(payload?.questions) ? payload.questions : [];
+                lastSavedAt = payload?.updatedAt || null;
+                loadFailed = false;
+                renderAll();
+                setAutosaveStatus();
+            } catch (error) {
+                console.error(error);
+                loadFailed = true;
+                questions = [];
+                renderAll();
+                setAutosaveStatus(`数据读取失败：${String(error)}`, true);
+            }
+        }
+
+        function saveData() {
+            if (loadFailed) {
+                setAutosaveStatus('本地存储不可用，修改未保存', true);
+                return Promise.resolve(false);
+            }
+
+            const payload = {
+                app: '我的错题本',
+                schemaVersion: SCHEMA_VERSION,
+                updatedAt: new Date().toISOString(),
+                questions: questions.map(question => ({
+                    id: String(question.id),
+                    subject: question.subject,
+                    question: question.question,
+                    reason: question.reason,
+                    errorCount: question.errorCount,
+                    date: question.date
+                }))
+            };
+
+            pendingWrites++;
+            setAutosaveStatus('正在自动保存...');
+            const operation = saveQueue
+                .then(async () => {
+                    try {
+                        await writeState(payload);
+                        lastSavedAt = payload.updatedAt;
+                        setAutosaveStatus();
+                        return true;
+                    } catch (error) {
+                        console.error(error);
+                        setAutosaveStatus(`自动保存失败：${String(error)}`, true);
+                        return false;
+                    }
+                })
+                .finally(() => {
+                    pendingWrites = Math.max(0, pendingWrites - 1);
+                });
+
+            saveQueue = operation.catch(() => false);
+            return operation;
+        }
+
+        function bindUi() {
+            document.getElementById('filterSection').addEventListener('click', event => {
+                const button = event.target.closest('.filter-btn');
+                if (button) filterBySubject(button.dataset.subject || '');
+            });
+            document.getElementById('questionsList').addEventListener('click', event => {
+                const button = event.target.closest('button[data-action]');
+                if (!button) return;
+                if (button.dataset.action === 'delete') deleteQuestion(button.dataset.id);
+                if (button.dataset.action === 'increase') increaseErrorCount(button.dataset.id);
+            });
+            window.addEventListener('beforeunload', event => {
+                if (pendingWrites > 0) {
+                    event.preventDefault();
+                    event.returnValue = '';
+                }
+            });
+        }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js').catch(error => {
+                    console.warn('Service Worker 注册失败', error);
+                });
+            });
+        }
+
+        loadInitialData();
+    </script>
+</body>
+</html>
